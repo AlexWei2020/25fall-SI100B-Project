@@ -29,6 +29,16 @@ ShanghaiTech 25fall SI100B Project
 
 <img src="./screenshots/image-20251210151129086.png" alt="image-20251210151129086" style="zoom:50%;" />
 
+### 4. 关机
+
+在ssh终端内输入以下命令后回车即可
+
+```bash
+sudo shutdown now
+```
+
+
+
 ## git本地配置快速上手 
 
 ### 1. 方法一：使用命令行配置

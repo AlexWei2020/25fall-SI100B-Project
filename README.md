@@ -1,6 +1,34 @@
 # SI100B_Project
 ShanghaiTech 25fall SI100B Project
 
+## 树莓派连接指南
+
+2025.12.10 更新
+
+### 1. 网络配置
+
+使用IPOP工具，或直接在设置/控制面板网络适配器管理中，找到连接树莓派的有线网卡，将DHCP自动获取ip修改为静态**192.168.137.X**，X≠2，子网掩码**255.255.255.0**
+
+### 2.终端ssh连接
+
+可使用putty/Termius等ssh工具，配置信息如下
+
+> ip address: 192.168.137.2
+>
+> port: 22
+>
+> username: pi
+>
+> password: （打一个空格即可）
+
+若需与树莓派传输文件，可使用sftp（SSH File Transfer Protocol）协议传输，配置同ssh，工具可选用WinSCP，Termius等
+
+### 3. VNC远程桌面连接
+
+如图，使用同ssh，输入ip地址，账号密码后连接即可。
+
+<img src="./screenshots/image-20251210151129086.png" alt="image-20251210151129086" style="zoom:50%;" />
+
 ## git本地配置快速上手 
 
 ### 1. 方法一：使用命令行配置

@@ -1,6 +1,5 @@
 # SI100B_Project
 ShanghaiTech 25fall SI100B Project
-
 ## 任务时间表
 
 | 时间                                         | 内容                                      | 具体要求                                                     |
@@ -16,7 +15,7 @@ ShanghaiTech 25fall SI100B Project
 
 ## 附录一 树莓派连接指南
 
-2025.12.10 更新
+2025.12.11 更新
 
 ### 1. 网络配置
 
@@ -48,6 +47,20 @@ ShanghaiTech 25fall SI100B Project
 
 ```bash
 sudo shutdown now
+```
+
+### 5. (补充,用于无线连接）
+
+输出树莓派的ip地址
+
+```bash
+hostname -I
+```
+
+将jupyter notebook绑定到所有接口的启动参数
+
+```bash
+jupyter notebook --ip=0.0.0.0 --no-browser --port=8888
 ```
 
 

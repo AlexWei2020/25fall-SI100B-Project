@@ -1,5 +1,10 @@
 # SI100B_Project
-ShanghaiTech 25fall SI100B Project
+ShanghaiTech 25fall SI100B Project: Handwritten Number Recognization
+
+## Contributors
+
+[@AlexWei2020](https://github.com/AlexWei2020), [@EvelynX2025](https://github.com/EvelynX2025), [@hongyue2025](https://github.com/hongyue2025)
+
 ## 任务时间表
 
 | 时间                                         | 内容                                      | 具体要求                                                     |

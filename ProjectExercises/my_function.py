@@ -49,20 +49,25 @@ def image_split_horizontal(img:np.ndarray)->list:
     # count the number of elements with a value of 255 in each column and record it in columnHist
     # record the location where the the number of 255 changes in startList and endList
     # record the status with flag   
-    
-    
-    
-    
-        
+    for col in range(columns):
+        columnHist = np.sum(img==255,axis=0)
+        if flag == 0 and columnHist[col] > 0:
+            flag = 1
+            startList.append(col)
+        elif flag == 1 and columnHist[col] == 0:
+            flag = 0
+            endList.append(col)
+    if flag == 1:
+        endList.append(columns[-1])
+            
+            
     # step 2:
     # following the startList and the endList, split the digits area from the original image.
     # there maybe several areas. recorder the areas in imgList and return imgList.
     imgList = []
-    
-        
-    
-    
-    
+    for i in range(len(startList)):
+        digits_area = img[:,startList[i]:endList[i]]
+        imgList.append(digits_area)
     ret = imgList
     return ret
 
@@ -98,21 +103,25 @@ def image_split_vertical(img:np.ndarray)->list:
     # count the number of elements with a value of 255 in each row and record it in rowHist
     # record the location where the the number of 255 changes in startList and endList
     # record the status with flag
-    
-    
-    
-    
+    for row in range(rows):
+        rowHist = np.sum(img==255,axis=1)
+        if flag == 0 and rowHist[row] > 0:
+            flag = 1
+            startList.append(row)
+        elif flag == 1 and rowHist[row] == 0:
+            flag = 0
+            endList.append(row)
+    if flag == 1:
+        endList.append(rows[-1])
     
     
     # step 2:
     # following the startList and the endList, split the digits area from the original image.
     # there maybe several areas. recorder the areas in imgList and return imgList.    
     imgList = []  
-    
-    
-    
-    
-    
+    for i in range(len(startList)):
+        digits_area = img[startList[i]:endList[i],:]
+        imgList.append(digits_area)
     ret = imgList
     return ret
 

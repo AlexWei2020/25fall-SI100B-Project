@@ -20,37 +20,13 @@ mode = GPIO.getmode()
 # Close GPIO warning
 GPIO.setwarnings(False)
 
-def image_split_horizontal(img:np.ndarray)->list:
-    """
-    Function description: Splite the image by column(horizontal). 
-    Tips:
-    1. Calculate the number of elements with a value of 255 in each column.
-    2. When the number of 255 changes from zero to non-zero, it indicates the beginning of the digits area. Use startList to record the starting column index.
-    3. When the number of 255 changes from non-zero to zero, it indicates the end of the digits area. Use endList to recorder the end column index.
-    4. Use flag to represent the current state, outside or inside the digits area.
-    
-    :param img: input image to be splited by column.
-    :return: output image after splited by column. It is a list, but its elements are np.ndarray.
-    """
-    
-    # find out the number of columns in the original image
-    # create a list to record the number of elements with a value of 255 in each column
-    columns = img.shape[1]
-    
-    # initialize the variables
+def image_split_horizontal(img: np.ndarray, pad=20) -> list:
+    h, w = img.shape
+    columnHist = np.sum(img == 255, axis=0)
     flag = 0
     startList = []
     endList = []
-    
-    
-    ### write your codes here ###
-    #############################
-    # step1:
-    # count the number of elements with a value of 255 in each column and record it in columnHist
-    # record the location where the the number of 255 changes in startList and endList
-    # record the status with flag   
-    for col in range(columns):
-        columnHist = np.sum(img==255,axis=0)
+    for col in range(w):
         if flag == 0 and columnHist[col] > 0:
             flag = 1
             startList.append(col)
@@ -58,53 +34,28 @@ def image_split_horizontal(img:np.ndarray)->list:
             flag = 0
             endList.append(col)
     if flag == 1:
-        endList.append(columns[-1])
-            
-            
-    # step 2:
-    # following the startList and the endList, split the digits area from the original image.
-    # there maybe several areas. recorder the areas in imgList and return imgList.
+        endList.append(w)
+    #padding
     imgList = []
     for i in range(len(startList)):
-        digits_area = img[:,startList[i]:endList[i]]
+        start = max(0, startList[i] - pad)
+        end = min(w, endList[i] + pad)
+        digits_area = img[:, start:end]
         imgList.append(digits_area)
-    ret = imgList
-    return ret
+
+    return imgList
 
 
 
-def image_split_vertical(img:np.ndarray)->list:
-    """
-    Function description: Splite the image by row(vertical). 
-    Tips:
-    1. Calculate the number of elements with a value of 255 in each row.
-    2. When the number of 255 changes from zero to non-zero, it indicates the beginning of the digits area. Use startList to record the starting row index.
-    3. When the number of 255 changes from non-zero to zero, it indicates the end of the digits area. Use endList to recorder the end row index.
-    4. Use flag to represent the current state, outside or inside the digits area.
-    
-    :param img: input image to be splited by row.
-    :return: output image after splited by row. It is a list, but its elements are np.ndarray.
-    """
-    
-    # find out the number of rows in the original image
-    # create a list to record the number of elements with a value of 255 in each row
-    
-    rows = img.shape[0]
-    
-    # initialize the variables
+
+
+def image_split_vertical(img: np.ndarray, pad=20) -> list:
+    h, w = img.shape
+    rowHist = np.sum(img == 255, axis=1)
     flag = 0
     startList = []
-    endList = [] 
-    
-    
-    ### write your codes here ###
-    #############################
-    # step1:
-    # count the number of elements with a value of 255 in each row and record it in rowHist
-    # record the location where the the number of 255 changes in startList and endList
-    # record the status with flag
-    for row in range(rows):
-        rowHist = np.sum(img==255,axis=1)
+    endList = []
+    for row in range(h):
         if flag == 0 and rowHist[row] > 0:
             flag = 1
             startList.append(row)
@@ -112,18 +63,18 @@ def image_split_vertical(img:np.ndarray)->list:
             flag = 0
             endList.append(row)
     if flag == 1:
-        endList.append(rows[-1])
-    
-    
-    # step 2:
-    # following the startList and the endList, split the digits area from the original image.
-    # there maybe several areas. recorder the areas in imgList and return imgList.    
-    imgList = []  
+        endList.append(h)
+    #padding
+    imgList = []
     for i in range(len(startList)):
-        digits_area = img[startList[i]:endList[i],:]
+        start = max(0, startList[i] - pad)
+        end = min(h, endList[i] + pad)
+        digits_area = img[start:end, :]
         imgList.append(digits_area)
-    ret = imgList
-    return ret
+
+    return imgList
+
+
 
 
 

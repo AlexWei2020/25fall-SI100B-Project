@@ -15,7 +15,7 @@ from picamera2 import Picamera2
 PRJ_PATH = os.getcwd()
 
 # GPIO mode: GPIO.BOARD, GPIO.BCM
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 mode = GPIO.getmode()
 # Close GPIO warning
 GPIO.setwarnings(False)
@@ -74,54 +74,46 @@ def image_split_vertical(img: np.ndarray, pad=20) -> list:
 
     return imgList
 
+def led_display(numList: list) -> None:
+    gpio_pins = {
+        'a': 21,
+        'b': 20,
+        'c': 25,
+        'd': 8,
+        'e': 7,
+        'f': 12,
+        'g': 1,
+        'h': 24
+    }
+
+    for pin in gpio_pins.values():
+        GPIO.setup(pin, GPIO.OUT, initial=GPIO.HIGH)
 
 
+    num_table = {
+        0: {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':1,'h':1},
+        1: {'a':1,'b':0,'c':0,'d':1,'e':1,'f':1,'g':1,'h':1},
+        2: {'a':0,'b':0,'c':1,'d':0,'e':0,'f':1,'g':0,'h':1},
+        3: {'a':0,'b':0,'c':0,'d':0,'e':1,'f':1,'g':0,'h':1},
+        4: {'a':1,'b':0,'c':0,'d':1,'e':1,'f':0,'g':0,'h':1},
+        5: {'a':0,'b':1,'c':0,'d':0,'e':1,'f':0,'g':0,'h':1},
+        6: {'a':0,'b':1,'c':0,'d':0,'e':0,'f':0,'g':0,'h':1},
+        7: {'a':0,'b':0,'c':0,'d':1,'e':1,'f':1,'g':1,'h':1},
+        8: {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':0,'h':1},
+        9: {'a':0,'b':0,'c':0,'d':0,'e':1,'f':0,'g':0,'h':1},
+    }
 
-
-def led_display(numList:list)->None:
-    """
-    Function description: Build a digital tube display circuit on the breadboard. Display the result with the digital tube.
-    Tips:
-    1.The GPIO mode we used is GPIO.BOARD. 
-    2.The digital tube is common anode. Use GPIO port to input high level for digital tube power pin.
-    3. After the LED lamp pin of the digital tube is connected to the GPIO pin, the corresponding relationship can be confirmed by lighting the led one by one.
-    4. Check "function introduction.xlsx" for GPIO functions.
-    
-    :para numList: input numbers in list to be displayed.
-    :return: None
-    """
-
-    ### write your codes here ###
-    #############################
-    # step 1:
-    # Clarify the relationship between led pins and GPIO pins
-    # Set the GPIO pins to GPIO.OUT mode and give them the right output
-      
-    
-    
-    
-    
-    # step 2:
-    # Clarify the led composition of each number
-    
-    
-    
-      
+    try:
+        for line in numList:
+            for num in line:
+                for seg, val in num_table[num].items():
+                    GPIO.output(gpio_pins[seg], val)
+                time.sleep(1)
+            time.sleep(2)
+    finally:
+        GPIO.cleanup()
         
-    # step 3:
-    # Display the numbers in the list one by one
-    # Display every number for 1 second
-    # Wait two seconds when displaying different lines
-    
-    
-    
-    
-    
-    
-    ret = None
-    return ret
-
-
+        
 def take_photo_libcamera()->str:
     """
     Function description: Build the camera control circuit on the breadboard. After pressing the control button, the shooting indicator(led light) lights up and the camera takes a picture.

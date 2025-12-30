@@ -21,36 +21,9 @@ mode = GPIO.getmode()
 # Close GPIO warning
 GPIO.setwarnings(False)
 
-def image_split_horizontal(img: np.ndarray, pad=20) -> list:
-    h, w = img.shape
-    columnHist = np.sum(img == 255, axis=0)
-    flag = 0
-    startList = []
-    endList = []
-    for col in range(w):
-        if flag == 0 and columnHist[col] > 0:
-            flag = 1
-            startList.append(col)
-        elif flag == 1 and columnHist[col] == 0:
-            flag = 0
-            endList.append(col)
-    if flag == 1:
-        endList.append(w)
-    #padding
-    imgList = []
-    for i in range(len(startList)):
-        start = startList[i]
-        end = endList[i]
-        digits_area = img[:, start:end]
-        digits_area = crop_black_border(digits_area)
-        if pad > 0:
-            digits_area = add_padding(digits_area, pad)
-        imgList.append(digits_area)
-
-    return imgList
-
-
 def crop_black_border(img):
+    if np.sum(img) == 0:
+        return img
     rows = np.where(np.sum(img == 255, axis=1) > 0)[0]
     cols = np.where(np.sum(img == 255, axis=0) > 0)[0]
     if len(rows) == 0 or len(cols) == 0:
@@ -60,27 +33,26 @@ def crop_black_border(img):
 def add_padding(img: np.ndarray, pad: int, value: int = 0) -> np.ndarray:
     if pad <= 0:
         return img
-
     h, w = img.shape
     out = np.full((h + 2 * pad, w + 2 * pad), value, dtype=img.dtype)
     out[pad:pad + h, pad:pad + w] = img
     return out
 
-
-
-
-def image_split_vertical(img: np.ndarray, pad=20) -> list:
+def image_split_vertical(img: np.ndarray, pad=0) -> list:
+    if img is None or img.size == 0:
+        return []
     h, w = img.shape
     rowHist = np.sum(img == 255, axis=1)
     flag = 0
     startList = []
     endList = []
+    noise_thresh = max(1, w // 50)
 
     for row in range(h):
-        if flag == 0 and rowHist[row] > 0:
+        if flag == 0 and rowHist[row] > noise_thresh:
             flag = 1
             startList.append(row)
-        elif flag == 1 and rowHist[row] == 0:
+        elif flag == 1 and rowHist[row] <= noise_thresh:
             flag = 0
             endList.append(row)
     if flag == 1:
@@ -90,13 +62,83 @@ def image_split_vertical(img: np.ndarray, pad=20) -> list:
     for i in range(len(startList)):
         start = startList[i]
         end = endList[i]
-        digits_area = img[start:end, :]
-#         digits_area = crop_black_border(digits_area)
-#         if pad > 0:
-#             digits_area = add_padding(digits_area, pad)
-        imgList.append(digits_area)
+        split_area = img[start:end, :]
+        split_area = crop_black_border(split_area)
+        sh, sw = split_area.shape
+        if sh < 5 or sw < 5: 
+            continue
+            
+        if pad > 0:
+            split_area = add_padding(split_area, pad)
+        if split_area.size > 0:
+            imgList.append(split_area)
     return imgList
 
+def image_split_horizontal(img: np.ndarray, pad=20) -> list:
+    h, w = img.shape
+    columnHist = np.sum(img == 255, axis=0)
+    flag = 0
+    startList = []
+    endList = []
+    noise_thresh = max(0, h // 100)
+    
+    for col in range(w):
+        if flag == 0 and columnHist[col] > noise_thresh:
+            flag = 1
+            startList.append(col)
+        elif flag == 1 and columnHist[col] <= noise_thresh:
+            flag = 0
+            endList.append(col)
+    if flag == 1:
+        endList.append(w)
+        
+    temp_items = []
+    for i in range(len(startList)):
+        x_start = startList[i]
+        x_end = endList[i]
+        vertical_strip = img[:, x_start:x_end]
+        
+        strip_h, strip_w = vertical_strip.shape
+        rowHist = np.sum(vertical_strip == 255, axis=1)
+        v_flag = 0
+        y_starts = []
+        y_ends = []
+        
+        for row in range(strip_h):
+            if v_flag == 0 and rowHist[row] > 0:
+                v_flag = 1
+                y_starts.append(row)
+            elif v_flag == 1 and rowHist[row] == 0:
+                v_flag = 0
+                y_ends.append(row)
+        if v_flag == 1:
+            y_ends.append(strip_h)
+            
+        for j in range(len(y_starts)):
+            y_s, y_e = y_starts[j], y_ends[j]
+            digit = vertical_strip[y_s:y_e, :]
+            
+            # 预先裁剪以检查实际大小
+            digit_cropped = crop_black_border(digit)
+            dh, dw = digit_cropped.shape
+            
+            # 优化：过滤掉尺寸过小的噪点块（例如高度小于8像素或宽度小于3像素）
+            if dh < 8 or dw < 3:
+                continue
+                
+            temp_items.append((y_s, x_start, digit_cropped))
+
+    temp_items.sort(key=lambda k: (k[0] // (max(h // 3, 10) + 1), k[1]))
+
+    imgList = []
+    for item in temp_items:
+        # 已经裁剪过了，直接加padding
+        final_digit = item[2] 
+        if pad > 0:
+            final_digit = add_padding(final_digit, pad)
+        imgList.append(final_digit)
+
+    return imgList
 
 def led_display(numList: list) -> None:
     # GPIO mode: GPIO.BOARD, GPIO.BCM
@@ -163,11 +205,6 @@ def take_photo_libcamera() -> str:
     filename = f"{timestamp}.jpg"
     filepath = os.path.join(SaveDirectory, filename)
     GPIO.wait_for_edge(ButtonInputPin, GPIO.BOTH)
-    for i in range(3): 
-        GPIO.output(LedInputPin, GPIO.HIGH)  # 高电平点亮 LED
-        sleep(0.5)
-        GPIO.output(LedInputPin, GPIO.LOW)   # 低电平熄灭 LED
-        sleep(0.5)
     preview_proc.terminate()
     preview_proc.wait()
 
@@ -179,7 +216,11 @@ def take_photo_libcamera() -> str:
         sleep(0.2)
         picam2.capture_file(filepath)
         picam2.stop()
-
+    for i in range(3): 
+        GPIO.output(LedInputPin, GPIO.HIGH)  # 高电平点亮 LED
+        sleep(0.5)
+        GPIO.output(LedInputPin, GPIO.LOW)   # 低电平熄灭 LED
+        sleep(0.5)
     GPIO.cleanup()
     print(f"拍照完成，保存路径: {filepath}")
 

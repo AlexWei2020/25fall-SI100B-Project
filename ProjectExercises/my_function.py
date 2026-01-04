@@ -117,12 +117,8 @@ def image_split_horizontal(img: np.ndarray, pad=20) -> list:
         for j in range(len(y_starts)):
             y_s, y_e = y_starts[j], y_ends[j]
             digit = vertical_strip[y_s:y_e, :]
-            
-            # 预先裁剪以检查实际大小
             digit_cropped = crop_black_border(digit)
             dh, dw = digit_cropped.shape
-            
-            # 优化：过滤掉尺寸过小的噪点块（例如高度小于8像素或宽度小于3像素）
             if dh < 8 or dw < 3:
                 continue
                 
@@ -132,7 +128,6 @@ def image_split_horizontal(img: np.ndarray, pad=20) -> list:
 
     imgList = []
     for item in temp_items:
-        # 已经裁剪过了，直接加padding
         final_digit = item[2] 
         if pad > 0:
             final_digit = add_padding(final_digit, pad)
@@ -204,7 +199,7 @@ def take_photo_libcamera() -> str:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{timestamp}.jpg"
     filepath = os.path.join(SaveDirectory, filename)
-    GPIO.wait_for_edge(ButtonInputPin, GPIO.BOTH)
+    GPIO.wait_for_edge(ButtonInputPin, GPIO.RISING)
     preview_proc.terminate()
     preview_proc.wait()
 

@@ -1,6 +1,9 @@
 # SI100B_Project
 ShanghaiTech 25fall SI100B Project: Handwritten Number Recognization
 
+# ⚠️Important Notice
+Please adhere to academic integrity guidelines and DO NOT copy directly from this repository.
+
 ## Contributors
 
 [@AlexWei2020](https://github.com/AlexWei2020), [@EvelynX2025](https://github.com/EvelynX2025), [@hongyue2025](https://github.com/hongyue2025)
